@@ -14,12 +14,12 @@ namespace HttpConnectionPoolSampleDotnetFramework
         {
             Console.WriteLine("Started application");
             ConcurrentQueue<string> payloads = new ConcurrentQueue<string>();
-			for (int i = 0; i < 1000; i++)
+			for (int i = 0; i < 10000; i++)
 			{
 				payloads.Enqueue(i.ToString());
 			}
             var test = new ConnectionTest();
-            test.Start("https://api.staging.connectedcars.io/healthz", 50, payloads);
+            test.StartOldStyle("https://api.staging.connectedcars.io/healthz", 100, payloads);
         }
     }
 }

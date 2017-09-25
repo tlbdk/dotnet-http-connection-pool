@@ -17,13 +17,17 @@ namespace HttpConnectionPoolSampleDotnetFramework
 
         public void StartOldStyle(string url, int numberOfThreads, ConcurrentQueue<string> payloads)
         {
-			ThreadPool.SetMaxThreads(5000, 5000);
-			ThreadPool.SetMinThreads(5000, 5000);
+            ThreadPool.SetMaxThreads(5000, 5000);
+            ThreadPool.SetMinThreads(5000, 5000);
 
-			ServicePointManager.DefaultConnectionLimit = numberOfThreads;
-            //ServicePointManager.MaxServicePointIdleTime = 60000;
+            ServicePointManager.DefaultConnectionLimit = numberOfThreads;
+            ServicePointManager.MaxServicePointIdleTime = 60000;
             var endPoint = ServicePointManager.FindServicePoint(new Uri(url));
-            endPoint.ConnectionLeaseTimeout = 1000;
+            // Leaks connections
+            // endPoint.ConnectionLeaseTimeout = 1000;
+            // endPoint.MaxIdleTime = 1000;
+            
+            endPoint.ConnectionLeaseTimeout = 2 * 60 * 1000;
             endPoint.MaxIdleTime = 60 * 1000;
 
             List<Task> tasks = new List<Task>(); 

@@ -26,44 +26,45 @@ namespace HttpConnectionPoolSampleDotnetFramework
             // Leaks connections
             // endPoint.ConnectionLeaseTimeout = 1000;
             // endPoint.MaxIdleTime = 1000;
-            
+
             endPoint.ConnectionLeaseTimeout = 2 * 60 * 1000;
             endPoint.MaxIdleTime = 60 * 1000;
 
-            List<Task> tasks = new List<Task>(); 
+            List<Task> tasks = new List<Task>();
             Console.WriteLine("Creating tasks");
             for (var i = 0; i < numberOfThreads; i++)
-			{
+            {
                 tasks.Add(Task.Run(() =>
-				{
+                {
                     Console.WriteLine("Started thread");
-					try
-					{
-						string payload;
-						while (payloads.TryDequeue(out payload))
-						{
-							HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-							request.Method = "GET";
+                    try
+                    {
+                        string payload;
+                        while (payloads.TryDequeue(out payload))
+                        {
+                            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                            request.Method = "GET";
                             request.KeepAlive = true;
 
                             Stopwatch stopwatch = Stopwatch.StartNew();
-							HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                             var content = (new StreamReader(response.GetResponseStream()).ReadToEnd());
-							stopwatch.Stop();
+                            stopwatch.Stop();
                             Console.WriteLine("{0}: {1} - {2}", url, content, stopwatch.ElapsedMilliseconds);
-							response.Close();
-							Interlocked.Increment(ref _successfulCalls);
-						}
-					}
-					catch (Exception ex)
-					{
-						Interlocked.Increment(ref _failedCalls);
-					}
+                            response.Close();
+                            Interlocked.Increment(ref _successfulCalls);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Interlocked.Increment(ref _failedCalls);
+                    }
                 }));
-			}
+            }
 
             Console.WriteLine("Waiting from tasks");
-            foreach(var task in tasks) {
+            foreach (var task in tasks)
+            {
                 task.Wait();
             }
             Console.WriteLine("success: {0}, fail: {1}", _successfulCalls, _failedCalls);

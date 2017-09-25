@@ -24,8 +24,8 @@ namespace HttpConnectionPoolSampleDotnetFramework
             ServicePointManager.MaxServicePointIdleTime = 60000;
             var endPoint = ServicePointManager.FindServicePoint(new Uri(url));
             // Leaks connections
-            // endPoint.ConnectionLeaseTimeout = 1000;
-            // endPoint.MaxIdleTime = 1000;
+            //endPoint.ConnectionLeaseTimeout = 1000;
+            //endPoint.MaxIdleTime = 1000;
 
             endPoint.ConnectionLeaseTimeout = 2 * 60 * 1000;
             endPoint.MaxIdleTime = 60 * 1000;
@@ -73,10 +73,7 @@ namespace HttpConnectionPoolSampleDotnetFramework
 
         public void StartNewStyle(string url, int numberOfThreads, ConcurrentQueue<string> payloads)
         {
-            ThreadPool.SetMaxThreads(5000, 5000);
-            ThreadPool.SetMinThreads(5000, 5000);
-
-            ServicePointManager.DefaultConnectionLimit = 10;
+            ServicePointManager.DefaultConnectionLimit = numberOfThreads;
             //var endPoint = ServicePointManager.FindServicePoint(new Uri(url));
             //endPoint.ConnectionLeaseTimeout = 2 * 60 * 000;
             //endPoint.MaxIdleTime = 60 * 1000;
@@ -96,7 +93,7 @@ namespace HttpConnectionPoolSampleDotnetFramework
                         {
                             Stopwatch stopwatch = Stopwatch.StartNew();
                             var response = await httpClient.GetAsync(url);
-                            var content = response.Content.ReadAsStringAsync();
+                            var content = await response.Content.ReadAsStringAsync();
                             stopwatch.Stop();
                             Console.WriteLine("{0}: {1} - {2}", url, content, stopwatch.ElapsedMilliseconds);
                             Interlocked.Increment(ref _successfulCalls);

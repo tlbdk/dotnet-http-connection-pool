@@ -20,6 +20,7 @@ namespace HttpConnectionPoolSampleDotnetFramework
             }
             var test = new ConnectionTest();
             test.StartOldStyle("https://api.staging.connectedcars.io/healthz", 100, payloads);
+            //test.StartNewStyle("https://api.staging.connectedcars.io/healthz", 100, payloads);
         }
     }
 }

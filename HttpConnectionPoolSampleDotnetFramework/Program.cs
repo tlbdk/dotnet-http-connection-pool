@@ -19,8 +19,9 @@ namespace HttpConnectionPoolSampleDotnetFramework
                 payloads.Enqueue(i.ToString());
             }
             var test = new ConnectionTest();
-            test.StartOldStyle("https://api.staging.connectedcars.io/healthz", 100, payloads);
-            //test.StartNewStyle("https://api.staging.connectedcars.io/healthz", 100, payloads);
+            // test.StartOldStyle("https://api.staging.connectedcars.io/healthz", 100, payloads);
+            //var task = test.StartNewStyle("https://api.staging.connectedcars.io/healthz", 100, payloads);
+            //task.Wait();
         }
     }
 }

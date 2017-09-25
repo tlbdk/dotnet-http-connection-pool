@@ -71,45 +71,33 @@ namespace HttpConnectionPoolSampleDotnetFramework
         }
 
 
-        public void StartNewStyle(string url, int numberOfThreads, ConcurrentQueue<string> payloads)
+        public async Task StartNewStyle(string url, int numberOfThreads, ConcurrentQueue<string> payloads)
         {
             ServicePointManager.DefaultConnectionLimit = numberOfThreads;
-            //var endPoint = ServicePointManager.FindServicePoint(new Uri(url));
-            //endPoint.ConnectionLeaseTimeout = 2 * 60 * 000;
-            //endPoint.MaxIdleTime = 60 * 1000;
 
             HttpClient httpClient = new HttpClient();
-            List<Task> tasks = new List<Task>();
-            Console.WriteLine("Creating tasks");
-            for (var i = 0; i < numberOfThreads; i++)
+            
+            Console.WriteLine("Started thread");
+            try
             {
-                tasks.Add(Task.Run(async () =>
+                List<Task<HttpResponseMessage>> tasks = new List<Task<HttpResponseMessage>>();
+                string payload;
+                while (payloads.TryDequeue(out payload))
                 {
-                    Console.WriteLine("Started thread");
-                    try
-                    {
-                        string payload;
-                        while (payloads.TryDequeue(out payload))
-                        {
-                            Stopwatch stopwatch = Stopwatch.StartNew();
-                            var response = await httpClient.GetAsync(url);
-                            var content = await response.Content.ReadAsStringAsync();
-                            stopwatch.Stop();
-                            Console.WriteLine("{0}: {1} - {2}", url, content, stopwatch.ElapsedMilliseconds);
-                            Interlocked.Increment(ref _successfulCalls);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Interlocked.Increment(ref _failedCalls);
-                    }
-                }));
+                    var httpResponseTask = httpClient.GetAsync(url);
+                    tasks.Add(httpResponseTask);
+                }
+                foreach(var task in tasks)
+                {
+                    var response = await task;
+                    var content = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine("{0}: {1}", url, content);
+                    Interlocked.Increment(ref _successfulCalls);
+                }
             }
-
-            Console.WriteLine("Waiting from tasks");
-            foreach (var task in tasks)
+            catch (Exception ex)
             {
-                task.Wait();
+                Interlocked.Increment(ref _failedCalls);
             }
             Console.WriteLine("success: {0}, fail: {1}", _successfulCalls, _failedCalls);
         }
